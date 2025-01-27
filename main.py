@@ -72,7 +72,7 @@ app = FastAPI()
 @app.get("/", response_class=JSONResponse)
 async def index_page():
     load_metadata(
-        type="rag",
+        type="api",
         intermediate=False,
         db="pg",
         re_rank=False,
@@ -204,6 +204,7 @@ async def handle_media_stream(websocket: WebSocket):
                                 "streamSid": stream_sid,
                                 "media": {"payload": audio_payload},
                             }
+                            print(f"Sending audio delta: {audio_delta}")
                             await websocket.send_json(audio_delta)
 
                             if response_start_timestamp_twilio is None:
