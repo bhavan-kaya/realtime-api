@@ -205,7 +205,6 @@ async def handle_media_stream(websocket: WebSocket):
                                 "streamSid": stream_sid,
                                 "media": {"payload": audio_payload},
                             }
-                            print(f"Sending audio delta: {audio_delta}")
                             await websocket.send_json(audio_delta)
 
                             if response_start_timestamp_twilio is None:
@@ -387,6 +386,9 @@ async def handle_media_stream(websocket: WebSocket):
                                                 )
                                             finally:
                                                 message_task.cancel()  # Stop intermediate messages
+
+                                            # wait for 3 seconds to let the intermediate audio play
+                                            await asyncio.sleep(3)
 
                                             if result:
                                                 print(
