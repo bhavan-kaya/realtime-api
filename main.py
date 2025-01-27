@@ -51,6 +51,7 @@ INTRO = ""
 ADVANCED_SETTINGS = {}
 TOOLS_SCHEMA = []
 TOOLS = []
+INTERMEDIATE_AUDIO = ""
 
 PARAM_TYPE = ""
 PARAM_INTERMEDIATE = False
@@ -503,6 +504,7 @@ def load_metadata(
     global ADVANCED_SETTINGS
     global TOOLS_SCHEMA
     global TOOLS
+    global INTERMEDIATE_AUDIO
     global PARAM_TYPE
     global PARAM_INTERMEDIATE
     global PARAM_DB
@@ -520,6 +522,7 @@ def load_metadata(
     ADVANCED_SETTINGS = module.ADVANCED_SETTINGS
     TOOLS_SCHEMA = module.TOOLS_SCHEMA
     TOOLS = module.TOOLS
+    INTERMEDIATE_AUDIO = module.INTERMEDIATE_AUDIO
     PARAM_TYPE = type
     PARAM_INTERMEDIATE = intermediate
     PARAM_DB = db
