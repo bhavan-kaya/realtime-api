@@ -220,30 +220,29 @@ async def handle_media_stream(websocket: WebSocket):
 
                             await send_mark(websocket, stream_sid)
 
-                        # if (
-                        #     response_type
-                        #     == "response.function_call_arguments.delta"
-                        #     and "delta" in response
-                        # ):
+                        if (
+                            response_type == "response.function_call_arguments.delta"
+                            and "delta" in response
+                        ):
+                            audio_payload = INTERMEDIATE_AUDIO
+                            load_from_file = False
 
-                        #     # Path to your .mp3 file
-                        #     file_path = "./usecases/maintenance/custom-audio.wav"
+                            if load_from_file:
+                                file_path = f"./usecases/{PARAM_TYPE}/custom-audio.wav"
 
-                        #     # Read the .mp3 file in binary mode
-                        #     with open(file_path, "rb") as audio_file:
-                        #         # Encode the file content to Base64
-                        #         audio_payload = base64.b64encode(
-                        #             audio_file.read()
-                        #         ).decode("utf-8")
+                                with open(file_path, "rb") as audio_file:
+                                    audio_payload = base64.b64encode(
+                                        audio_file.read()
+                                    ).decode("utf-8")
 
-                        #         audio_delta = {
-                        #             "event": "media",
-                        #             "streamSid": stream_sid,
-                        #             "media": {"payload": audio_payload},
-                        #         }
+                            # Send Audio
+                            audio_delta_intermediate = {
+                                "event": "media",
+                                "streamSid": stream_sid,
+                                "media": {"payload": audio_payload},
+                            }
 
-                        #         await websocket.send_json(audio_delta)
-                        # if response_type == "response.function_call_arguments.done":
+                            await websocket.send_json(audio_delta_intermediate)
 
                         if response_type == "response.created":
                             responses.append(
@@ -369,26 +368,11 @@ async def handle_media_stream(websocket: WebSocket):
                                                     )
                                                 print("Args to invoke tool:", args)
 
-                                                # Send Audio
-                                                audio_delta_intermediate = {
-                                                    "event": "media",
-                                                    "streamSid": stream_sid,
-                                                    "media": {
-                                                        "payload": INTERMEDIATE_AUDIO
-                                                    },
-                                                }
-                                                await websocket.send_json(
-                                                    audio_delta_intermediate
-                                                )
-
                                                 result = await asyncio.to_thread(
                                                     tool_to_invoke.func, **args
                                                 )
                                             finally:
                                                 message_task.cancel()  # Stop intermediate messages
-
-                                            # wait for 3 seconds to let the intermediate audio play
-                                            await asyncio.sleep(15)
 
                                             if result:
                                                 print(
