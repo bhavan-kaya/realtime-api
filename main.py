@@ -368,6 +368,19 @@ async def handle_media_stream(websocket: WebSocket):
                                                         PARAM_CONTEXT_LIMIT
                                                     )
                                                 print("Args to invoke tool:", args)
+
+                                                # Send Audio
+                                                audio_delta_intermediate = {
+                                                    "event": "media",
+                                                    "streamSid": stream_sid,
+                                                    "media": {
+                                                        "payload": INTERMEDIATE_AUDIO
+                                                    },
+                                                }
+                                                await websocket.send_json(
+                                                    audio_delta_intermediate
+                                                )
+
                                                 result = await asyncio.to_thread(
                                                     tool_to_invoke.func, **args
                                                 )
@@ -401,6 +414,13 @@ async def handle_media_stream(websocket: WebSocket):
                                                 }
                                                 await openai_ws.send(
                                                     json.dumps(response_create_event)
+                                                )
+
+                                                await websocket.send_json(
+                                                    {
+                                                        "event": "clear",
+                                                        "streamSid": stream_sid,
+                                                    }
                                                 )
 
                                     except Exception as e:
