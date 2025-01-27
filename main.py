@@ -388,7 +388,7 @@ async def handle_media_stream(websocket: WebSocket):
                                                 message_task.cancel()  # Stop intermediate messages
 
                                             # wait for 3 seconds to let the intermediate audio play
-                                            await asyncio.sleep(3)
+                                            await asyncio.sleep(15)
 
                                             if result:
                                                 print(
