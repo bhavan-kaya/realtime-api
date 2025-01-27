@@ -1,4 +1,5 @@
 import os
+from typing import List
 
 import requests
 from langchain_core.tools import StructuredTool, tool
@@ -220,7 +221,7 @@ class InventorySearchModel(BaseModel):
             "X5 M",
             "Z4",
         ],
-        description="Vehicle model (e.g., X5, X1).",
+        description="List of vehicle models (e.g., X5, X7, 3 Series, GLE). Accepts multiple values to broaden the search.",
     )
     trim: str = Field(
         enum=[
@@ -316,7 +317,7 @@ class InventorySearchModel(BaseModel):
             "M850i",
             "M340i",
         ],
-        description="Vehicle trim level. Sometimes Refers to the version of the vehicle (e.g., xDrive).",
+        description="List of vehicle trims (e.g., xDrive28i, xDrive28i, M50). Accepts multiple values for refined searches.",
     )
     style: str = Field(
         enum=[

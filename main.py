@@ -73,7 +73,7 @@ app = FastAPI()
 @app.get("/", response_class=JSONResponse)
 async def index_page():
     load_metadata(
-        type="rag",
+        type="api",
         intermediate=False,
         db="pg",
         re_rank=False,
@@ -205,6 +205,7 @@ async def handle_media_stream(websocket: WebSocket):
                                 "streamSid": stream_sid,
                                 "media": {"payload": audio_payload},
                             }
+                            print(f"Sending audio delta: {audio_delta}")
                             await websocket.send_json(audio_delta)
 
                             if response_start_timestamp_twilio is None:
@@ -433,7 +434,6 @@ async def handle_media_stream(websocket: WebSocket):
                                             f"Respond to the user with apologetic message. ' apologize, but I'm having trouble processing your request right now. Is there anything else I can help you with?'",
                                         )
 
-                        # Trigger an interruption. Your use case might work better using `input_audio_buffer.speech_stopped`, or combining the two.
                         if response_type == "input_audio_buffer.speech_started":
                             print("Speech started detected.")
                             if last_assistant_item:
@@ -581,6 +581,7 @@ async def send_conversation_item(ws, text, is_last_response_active=False):
 
 async def initialize_session(ws):
     """Control initial session with OpenAI."""
+    print("Current tool schema:", TOOLS_SCHEMA)
     session_update = {
         "type": "session.update",
         "session": {
