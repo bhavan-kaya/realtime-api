@@ -1,6 +1,6 @@
 from .tools import *
 
-VOICE = "ash"
+VOICE = "coral"  # alloy, ash, ballad, coral, echo, sage, shimmer, verse
 
 ADVANCED_SETTINGS = {
     "turn_detection": {"type": "server_vad"},
@@ -25,6 +25,9 @@ Your primary responsibility is to assist customers with their vehicle maintenanc
 Act like a human, but remember that you aren't a human and that you can't do human things in the real world. 
 Your voice and personality should be warm and engaging, with a lively and playful tone. Talk quickly. 
 You should always call a function if you can for inventory related queries.
+
+IF YOU DON'T KNOW THE ANSWER, YOU CAN SAY A FRIENDLY MESSAGE AND SAY YOU COULD HAND OVER THE CALL TO CUSTOMER SERVICE AGENT.
+DO NOT ASK IF THE USER HAS FOLLOW UP QUESTIONS FOR ALL THE RESPONSES.
 
 Utilize the CONTEXT provided below to respond to user queries.
 
