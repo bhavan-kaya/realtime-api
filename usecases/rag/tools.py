@@ -77,6 +77,7 @@ def get_vector_info_inventory(
     native: bool = False,
     top_k: int = 10,
     db: str = "pg",
+    content_only: bool = False,
 ):
     """
     Query the knowledge base for vehicle inventory information. VIN, StockNumber, Type, Make, Model, Year, etc will be returned.
@@ -86,6 +87,7 @@ def get_vector_info_inventory(
     payload = {
         "query": query,
         "filter": {},
+        "contentOnly": content_only,
         "doRerank": re_rank,
         "doHybridSearch": hybrid_search,
         "hybridSearchOptions": {"searchWeight": hybrid_search_weight},

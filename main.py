@@ -62,6 +62,7 @@ PARAM_HYBRID_SEARCH_WEIGHT = 0
 PARAM_TOP_K = 0
 PARAM_ENABLE_FIELDS = False
 PARAM_CONTEXT_LIMIT = 0
+CONTENT_ONLY = False
 
 
 if not OPENAI_API_KEY:
@@ -82,6 +83,7 @@ async def index_page():
         top_k=10,
         enable_fields=False,
         context_limit=6000,
+        content_only=False,
     )
     return {"message": INTRO}
 
@@ -98,6 +100,7 @@ async def handle_incoming_call(
     hybrid_search: bool = False,
     hybrid_search_weight: float = 0.5,
     top_k: int = 10,
+    content_only: bool = False,
     # api
     enable_fields: bool = False,
     context_limit: int = 6000,
@@ -114,6 +117,7 @@ async def handle_incoming_call(
         top_k,
         enable_fields,
         context_limit,
+        content_only
     )
     # <Say> punctuation to improve text-to-speech flow
     if INTRO:
@@ -131,7 +135,7 @@ async def handle_media_stream(websocket: WebSocket):
     """Handle WebSocket connections between Twilio and OpenAI."""
     try:
         print(
-            f"Client connected with params. type: {PARAM_TYPE}, intermediate: {PARAM_INTERMEDIATE}, db: {PARAM_DB}, re_rank: {PARAM_RE_RANK}, hybrid_search: {PARAM_HYBRID_SEARCH}, hybrid_search_weight: {PARAM_HYBRID_SEARCH_WEIGHT}, top_k: {PARAM_TOP_K}, enable_fields: {PARAM_ENABLE_FIELDS}, context_limit: {PARAM_CONTEXT_LIMIT}"
+            f"Client connected with params. type: {PARAM_TYPE}, intermediate: {PARAM_INTERMEDIATE}, db: {PARAM_DB}, re_rank: {PARAM_RE_RANK}, hybrid_search: {PARAM_HYBRID_SEARCH}, hybrid_search_weight: {PARAM_HYBRID_SEARCH_WEIGHT}, top_k: {PARAM_TOP_K}, enable_fields: {PARAM_ENABLE_FIELDS}, context_limit: {PARAM_CONTEXT_LIMIT}, content_only: {CONTENT_ONLY}"
         )
         TOOL_MAP = {tool.name: tool for tool in TOOLS}
         print(f"Current tools: {TOOL_MAP} \n schema: {TOOLS_SCHEMA}")
@@ -220,29 +224,29 @@ async def handle_media_stream(websocket: WebSocket):
 
                             await send_mark(websocket, stream_sid)
 
-                        if (
-                            response_type == "response.function_call_arguments.delta"
-                            and "delta" in response
-                        ):
-                            audio_payload = INTERMEDIATE_AUDIO
-                            load_from_file = False
-
-                            if load_from_file:
-                                file_path = f"./usecases/{PARAM_TYPE}/custom-audio.wav"
-
-                                with open(file_path, "rb") as audio_file:
-                                    audio_payload = base64.b64encode(
-                                        audio_file.read()
-                                    ).decode("utf-8")
-
-                            # Send Audio
-                            audio_delta_intermediate = {
-                                "event": "media",
-                                "streamSid": stream_sid,
-                                "media": {"payload": audio_payload},
-                            }
-
-                            await websocket.send_json(audio_delta_intermediate)
+                        # if (
+                        #     response_type == "response.function_call_arguments.delta"
+                        #     and "delta" in response
+                        # ):
+                        #     audio_payload = INTERMEDIATE_AUDIO
+                        #     load_from_file = False
+                        #
+                        #     if load_from_file:
+                        #         file_path = f"./usecases/{PARAM_TYPE}/custom-audio.wav"
+                        #
+                        #         with open(file_path, "rb") as audio_file:
+                        #             audio_payload = base64.b64encode(
+                        #                 audio_file.read()
+                        #             ).decode("utf-8")
+                        #
+                        #     # Send Audio
+                        #     audio_delta_intermediate = {
+                        #         "event": "media",
+                        #         "streamSid": stream_sid,
+                        #         "media": {"payload": audio_payload},
+                        #     }
+                        #
+                        #     await websocket.send_json(audio_delta_intermediate)
 
                         if response_type == "response.created":
                             responses.append(
@@ -359,6 +363,7 @@ async def handle_media_stream(websocket: WebSocket):
                                                         PARAM_HYBRID_SEARCH_WEIGHT
                                                     )
                                                     args["top_k"] = PARAM_TOP_K
+                                                    args["content_only"] = CONTENT_ONLY
                                                 elif PARAM_TYPE == "api":
                                                     args["enable_fields"] = (
                                                         PARAM_ENABLE_FIELDS
@@ -396,19 +401,31 @@ async def handle_media_stream(websocket: WebSocket):
                                                     "type": "response.create",
                                                     "response": {
                                                         "modalities": ["text", "audio"],
-                                                        "instructions": f"Formulate an answer strictly based on the provided context chunks without adding external knowledge or assumptions. context: {result}. Be concise and friendly.",
+                                                        "instructions": f""""You are a call agent for Sonic Automobile. Using the below car profiles, answer customer queries accurately and concisely. If information is missing, acknowledge it and offer alternatives.
+                                                                            Example 1:
+                                                                            Query: "Does BMW offer ventilated seats and 3D parking assistance?"
+                                                                            Context: "The 2025 BMW 5 Series 530i xDrive features ventilated seats and 3D parking. The 540i xDrive includes these in the Premium Package."
+                                                                            Response: "Yes, BMW offers these in the 2025 5 Series 530i xDrive and 540i xDrive (Premium Package). Would you like more details or a test drive?"
+                                                                            
+                                                                            Example 2:
+                                                                            Query: "Can I find a white BMW X5 with black wheels?"
+                                                                            Context: "The 2025 Benz S series offers white and black colors with customizable wheels."
+                                                                            Response: "I couldn’t find a white BMW X5 with black wheels. Would you like help exploring similar options?"
+                                                                            
+                                                                            For use:
+                                                                            Context: {result}""",
                                                     },
                                                 }
                                                 await openai_ws.send(
                                                     json.dumps(response_create_event)
                                                 )
 
-                                                await websocket.send_json(
-                                                    {
-                                                        "event": "clear",
-                                                        "streamSid": stream_sid,
-                                                    }
-                                                )
+                                                # await websocket.send_json(
+                                                #     {
+                                                #         "event": "clear",
+                                                #         "streamSid": stream_sid,
+                                                #     }
+                                                # )
 
                                     except Exception as e:
                                         print(
@@ -499,6 +516,7 @@ def load_metadata(
     top_k,
     enable_fields,
     context_limit,
+    content_only
 ):
     module_name = f"usecases.{type}.config"
     module = importlib.import_module(module_name)
@@ -520,6 +538,7 @@ def load_metadata(
     global PARAM_TOP_K
     global PARAM_ENABLE_FIELDS
     global PARAM_CONTEXT_LIMIT
+    global CONTENT_ONLY
 
     INTRO = module.INTRO_TEXT
     INSTRUCTIONS = module.SYSTEM_INSTRUCTIONS
@@ -538,6 +557,7 @@ def load_metadata(
     PARAM_TOP_K = top_k
     PARAM_ENABLE_FIELDS = enable_fields
     PARAM_CONTEXT_LIMIT = context_limit
+    CONTENT_ONLY = content_only
 
 
 async def send_conversation_item(ws, text, is_last_response_active=False):
