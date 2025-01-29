@@ -51,6 +51,7 @@ INTRO = ""
 ADVANCED_SETTINGS = {}
 TOOLS_SCHEMA = []
 TOOLS = []
+INTERMEDIATE_AUDIO = ""
 
 PARAM_TYPE = ""
 PARAM_INTERMEDIATE = False
@@ -204,7 +205,6 @@ async def handle_media_stream(websocket: WebSocket):
                                 "streamSid": stream_sid,
                                 "media": {"payload": audio_payload},
                             }
-                            print(f"Sending audio delta: {audio_delta}")
                             await websocket.send_json(audio_delta)
 
                             if response_start_timestamp_twilio is None:
@@ -220,30 +220,29 @@ async def handle_media_stream(websocket: WebSocket):
 
                             await send_mark(websocket, stream_sid)
 
-                        # if (
-                        #     response_type
-                        #     == "response.function_call_arguments.delta"
-                        #     and "delta" in response
-                        # ):
+                        if (
+                            response_type == "response.function_call_arguments.delta"
+                            and "delta" in response
+                        ):
+                            audio_payload = INTERMEDIATE_AUDIO
+                            load_from_file = False
 
-                        #     # Path to your .mp3 file
-                        #     file_path = "./usecases/maintenance/custom-audio.wav"
+                            if load_from_file:
+                                file_path = f"./usecases/{PARAM_TYPE}/custom-audio.wav"
 
-                        #     # Read the .mp3 file in binary mode
-                        #     with open(file_path, "rb") as audio_file:
-                        #         # Encode the file content to Base64
-                        #         audio_payload = base64.b64encode(
-                        #             audio_file.read()
-                        #         ).decode("utf-8")
+                                with open(file_path, "rb") as audio_file:
+                                    audio_payload = base64.b64encode(
+                                        audio_file.read()
+                                    ).decode("utf-8")
 
-                        #         audio_delta = {
-                        #             "event": "media",
-                        #             "streamSid": stream_sid,
-                        #             "media": {"payload": audio_payload},
-                        #         }
+                            # Send Audio
+                            audio_delta_intermediate = {
+                                "event": "media",
+                                "streamSid": stream_sid,
+                                "media": {"payload": audio_payload},
+                            }
 
-                        #         await websocket.send_json(audio_delta)
-                        # if response_type == "response.function_call_arguments.done":
+                            await websocket.send_json(audio_delta_intermediate)
 
                         if response_type == "response.created":
                             responses.append(
@@ -368,6 +367,7 @@ async def handle_media_stream(websocket: WebSocket):
                                                         PARAM_CONTEXT_LIMIT
                                                     )
                                                 print("Args to invoke tool:", args)
+
                                                 result = await asyncio.to_thread(
                                                     tool_to_invoke.func, **args
                                                 )
@@ -401,6 +401,13 @@ async def handle_media_stream(websocket: WebSocket):
                                                 }
                                                 await openai_ws.send(
                                                     json.dumps(response_create_event)
+                                                )
+
+                                                await websocket.send_json(
+                                                    {
+                                                        "event": "clear",
+                                                        "streamSid": stream_sid,
+                                                    }
                                                 )
 
                                     except Exception as e:
@@ -503,6 +510,7 @@ def load_metadata(
     global ADVANCED_SETTINGS
     global TOOLS_SCHEMA
     global TOOLS
+    global INTERMEDIATE_AUDIO
     global PARAM_TYPE
     global PARAM_INTERMEDIATE
     global PARAM_DB
@@ -520,6 +528,7 @@ def load_metadata(
     ADVANCED_SETTINGS = module.ADVANCED_SETTINGS
     TOOLS_SCHEMA = module.TOOLS_SCHEMA
     TOOLS = module.TOOLS
+    INTERMEDIATE_AUDIO = module.INTERMEDIATE_AUDIO
     PARAM_TYPE = type
     PARAM_INTERMEDIATE = intermediate
     PARAM_DB = db
