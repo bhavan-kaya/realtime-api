@@ -74,6 +74,3 @@ Certifications:
 - Certified Azure Solutions Architect
 - Diploma in English Literature - British Council (2014)
 """
-
-
-

@@ -4,14 +4,14 @@ from .prompt_variables import *
 # The voice the model uses to respond. Current voice options are ash, ballad, coral, sage, and verse.
 # Also supported but not recommended are alloy, echo, and shimmer. These older voices are less expressive.
 # Voice cannot be changed during the session once the model has responded with audio at least once.
-VOICE = 'ash'
+VOICE = "ash"
 
-# Don't change below values, unless it's required and you have the expertise on doing that. 
-ADVANCED_SETTINGS = { 
+# Don't change below values, unless it's required and you have the expertise on doing that.
+ADVANCED_SETTINGS = {
     "turn_detection": {"type": "server_vad"},
     "input_audio_format": "g711_ulaw",
     "output_audio_format": "g711_ulaw",
-    "modalities": ["text","audio"],
+    "modalities": ["text", "audio"],
     "temperature": 0.8,
 }
 
@@ -20,8 +20,10 @@ INTRO_TEXT = """
     Thank you for calling. For quality of service, this call may be recorded. 
     """
 
-# Greeting message spoken out to the end user by AI setup. 
-GREETING_TEXT ="""Greet the user with 'Hello, I'm Bernie. Your interviewer for Today.'"""
+# Greeting message spoken out to the end user by AI setup.
+GREETING_TEXT = (
+    """Greet the user with 'Hello, I'm Bernie. Your interviewer for Today.'"""
+)
 
 # Main instruction prompt.
 SYSTEM_INSTRUCTIONS = f"""

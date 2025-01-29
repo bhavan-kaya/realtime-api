@@ -1,14 +1,14 @@
 from .prompt_variables import tasks
 
 # The voice the model uses to respond. Simplified for task reviews.
-VOICE = 'coral'
+VOICE = "coral"
 
 # Advanced settings for AI response configuration.
 ADVANCED_SETTINGS = {
     "turn_detection": {"type": "server_vad"},
     "input_audio_format": "g711_ulaw",
     "output_audio_format": "g711_ulaw",
-    "modalities": ["text","audio"],
+    "modalities": ["text", "audio"],
     "temperature": 0.8,
 }
 

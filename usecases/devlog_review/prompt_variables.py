@@ -54,5 +54,5 @@ tasks = [
         "status": "In Progress",
         "start_date": "2024-12-15",
         "end_date": None,
-    }
+    },
 ]
